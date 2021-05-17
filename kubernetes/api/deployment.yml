@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    component: api
+    conference: azdus
+  name: api
+  namespace: live
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      component: api
+      conference: azdus
+  template:
+    metadata:
+      labels:
+        component: api
+        conference: azdus
+    spec:
+      containers:
+      - image: azdus2021thh.azurecr.io/api:0.0.1
+        name: api
+        env:
+          - name: Thinktecture__Api__DatabaseConnectionString
+            valueFrom:
+              secretKeyRef:
+                name: sql
+                key: ConnectionString
+          - name: Thinktecture__Api__AuditLogRetentionDays
+            value: "2"
+        ports:
+        - containerPort: 80
+          name: http
+        readinessProbe:
+          httpGet:
+            port: 80
+            path: /readiness
+        livenessProbe:
+          httpGet:
+            port: 80
+            path: /liveness
+        resources:
+          requests:
+            cpu: 100m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi

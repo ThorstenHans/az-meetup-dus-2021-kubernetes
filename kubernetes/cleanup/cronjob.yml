@@ -1,0 +1,42 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: cleanup
+  namespace: live
+  labels:
+    component: cleanup
+    conference: azdus
+spec:
+  jobTemplate:
+    metadata:
+      name: cleanup
+      labels:
+        component: cleanup
+        conference: azdus
+    spec:
+      template:
+        metadata:
+          labels:
+            component: cleanup
+            conference: azdus
+        spec:
+          containers:
+          - image: azdus2021thh.azurecr.io/cleanup:0.0.1
+            name: cleanup
+            env:
+            - name: Thinktecture__Api__DatabaseConnectionString
+              valueFrom:
+                secretKeyRef:
+                  name: sql
+                  key: ConnectionString
+            - name: Thinktecture__Api__AuditLogRetentionDays
+              value: "2"
+            resources:
+              requests:
+                cpu: 50m
+                memory: 64Mi
+              limits:
+                cpu: 75m
+                memory: 96Mi
+          restartPolicy: Never
+  schedule: '*/5 * * * *'
